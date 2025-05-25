@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+    <title>Blog</title>
+</head>
+<body >
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+      <a class="navbar-brand" href="#">My Blog</a>
+    <div id="auth-buttons">
+      <button class="btn btn-light me-2" onclick="showLogin()">Login</button>
+      <button class="btn btn-light" onclick="showRegister()">Register</button>
+    </div>
+    </div>
+  </nav>
+
+  
+
+  <div class="container my-4">
+    <h2 class="text-center">
+            Create Blog 
+    </h2>
+    <form id="blog-form" enctype="multipart/form-data"  class="p-4 bg-light">
+
+        <div>
+            <label for="title" class="form-label">Title</label>
+            <input type="text" id="title" class="form-control" required />
+        </div>
+        <br>
+        <div>
+            <label for="content" class="form-label">Content</label>
+            <textarea id="content" class="form-control" rows="5" required   ></textarea>
+        </div>
+        <br>
+        <div>
+            <label for="image" class="form-label">Upload Image</label>
+            <input type="file" id="image" class="form-control" required />
+        </div>
+        <br>
+
+        <button type="submit" class="btn btn-primary"> Submit </button>
+
+    </form>
+
+    <h2 class="text-center my-5"> All Blogs</h2>
+    <div id="blogs" class="row g-4"></div>
+
+  <div >
+    
+
+  </div>
+  
+   <!-- Edit Blog Modal -->
+  <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <form id="edit-blog-form" enctype="multipart/form-data" class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Blog</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="edit-id" />
+          <div class="mb-3">
+            <label for="edit-title" class="form-label">Title</label>
+            <input type="text" id="edit-title" class="form-control" required />
+          </div>
+          <div class="mb-3">
+            <label for="edit-content" class="form-label">Content</label>
+            <textarea id="edit-content" class="form-control" rows="4" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="edit-image" class="form-label">Change Image (optional)</label>
+            <input type="file" id="edit-image" class="form-control" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Update</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- Login and Register -->
+
+  <div class="modal fade" id="authModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <form id="auth-login" class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Login</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" id="username" class="form-control" required />
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="text" id="password" class="form-control" required />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" id="authSubmitBtn" class="btn btn-success">Login</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
+  <!-- using fetch to consume API in Frontend -->
+  <script>
+
+    const API_URL = "http://127.0.0.1:8000/api/blogs/"
+
+    const TOKEN_URL = "http://127.0.0.1:8000/api/login/token/"
+
+
+    let token = localStorage.getItem('access');
+
+
+    function showLogin(){
+
+      const modal = new bootstrap.Modal(document.getElementById('authModal'));
+      modal.show();
+
+      document.getElementById('auth-login').addEventListener('submit', async function (e){
+        e.preventDefault();
+
+        const usernameVal = document.getElementById('username').value;
+        const passwordVal = document.getElementById('password').value;
+        const payload = {username: usernameVal, password: passwordVal};
+
+
+
+        const response = await fetch(TOKEN_URL, 
+        {
+          method: 'POST',
+          headers:{ 'content-Type': 'application/json'},
+          body : JSON.stringify(payload),
+        });
+
+        const data = await response.json();
+        if (response.ok){
+          token = data.access;
+          localStorage.setItem('access', token);
+          localStorage.setItem('username', usernameVal);
+          modal.hide();
+        }else{
+          alert("Login Failed")
+        }
+
+
+      })
+
+      // showAuthModal("Login", TOKEN_URL, true);
+
+    }
+
+    // function showAuthModal(title, url){
+
+    //   title = document.getElementById('authModal');
+    //   document.getElementById('authSubmitModal').onclick = async function (e) {
+
+    //     e.preventDefault();
+    //     const usernameVal = document.getElementById('username').value;
+    //     const passwordVal = document.getElementById('password').value;
+
+    //     const payload = {username: usernameVal, password: passwordVal};
+
+    //     console.log(usernameVal)
+
+
+        // const response = await fetch(url,{
+        //   method: 'POST',
+        //   headers:{ 'content- Type': 'application/json'},
+        //   body : JSON.stringify(payload),
+        // });
+
+    //     const data = await response.json();
+
+        // if (response.ok){
+        //   token = data.access;
+        //   localStorage.setItem('access', token);
+        //   localStorage.setItem('username', usernameVal);
+        // }else{
+        //   alert("Login Failed")
+        // }
+    //   }
+    // }
+
+    function getAuthHeader(){
+
+      return token ? { Authorization: 'Bearer ${token}'}: {};
+    }
+
+    async function fetchdata(){
+        const response = await fetch(API_URL);
+        console.log(response)
+        const data = await response.json();
+        console.log(data)
+        const container = document.getElementById('blogs');
+
+        container.innerHTML = '';
+
+        data.forEach(blog => {
+        container.innerHTML += `
+          <div class="col-md-4">
+            <div class="card shadow h-100">
+              ${blog.image ? `<img src="${blog.image}" class="card-img-top" alt="Blog Image">` : ''}
+              <div class="card-body d-flex flex-column">
+                <h5 class="card-title">${blog.title}</h5>
+                <h2 class="card-title">${blog.id}</h2>
+                <p class="card-text">${blog.content.slice(0, 100)}...</p>
+                <div class="mt-auto d-flex justify-content-between">
+                  <button onclick="openEditModal(${blog.id}, '${blog.title}', \`${blog.content.replace(/`/g, "\\`")}\`)" class="btn btn-warning btn-sm">Edit</button>
+                  <button onclick="deleteBlog(${blog.id})" class="btn btn-danger btn-sm">Delete</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    document.getElementById('blog-form').addEventListener('submit', async function (e){
+
+      e.preventDefault();
+
+      const formData = new FormData();
+
+      formData.append('title', document.getElementById('title').value);
+      formData.append('content', document.getElementById('content').value);
+
+      const imageFile = document.getElementById('image').files[0];
+
+      if (imageFile) formData.append('image', imageFile);
+
+
+      const response = await fetch(API_URL,
+        {
+          method: 'POST',
+          headers: getAuthHeader(),
+          body: formData
+        }
+      );
+
+      if (response.ok) {
+        this.reset();
+        fetchdata();
+      } else 
+      {
+        alert('Failed to create blog');
+      }
+    } );
+
+    async function deleteBlog(id) {
+
+      await fetch(`${API_URL}${id}/`,
+        {
+          method: 'DELETE'
+        }
+      );
+
+      fetchdata();
+      
+    }
+
+    // edit
+    function openEditModal(id, title, content) {
+      document.getElementById('edit-id').value = id;
+      document.getElementById('edit-title').value = title;
+      document.getElementById('edit-content').value = content;
+      const modal = new bootstrap.Modal(document.getElementById('editModal'));
+      modal.show();
+    }
+
+    document.getElementById('edit-blog-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const id = document.getElementById('edit-id').value;
+      const formData = new FormData();
+      formData.append('title', document.getElementById('edit-title').value);
+      formData.append('content', document.getElementById('edit-content').value);
+      const imageFile = document.getElementById('edit-image').files[0];
+      if (imageFile) formData.append('image', imageFile);
+
+      const response = await fetch(`${API_URL}${id}/`, {
+        method: 'PUT',
+        body: formData
+      });
+
+      if (response.ok) {
+        const modal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+        modal.hide();
+        fetchdata();
+      } else {
+        alert("Update failed");
+      }
+    });
+
+   
+    fetchdata();
+  </script>
+</body>
+</html>
