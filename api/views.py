@@ -23,15 +23,6 @@ class ProductList(APIView): # List all products or create a new product
         return Response(serializer.data)
 
 
-# class BlogCreate(APIView): 
-#     def post(self, request):
-#         serializer = BlogSerializer(data=request.data) #deserialize
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=201) #serialize
-#         return Response(serializer.errors)
-    
-
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
 def create_product(request):
