@@ -21,3 +21,7 @@ class Blog(models.Model):
 
     def __str__(self):
         return self.title
+    
+
+class demo(models.Model):
+    pass
